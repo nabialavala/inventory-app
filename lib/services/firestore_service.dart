@@ -21,7 +21,7 @@ class FirestoreService {
     await itemsRef.doc(item.id).update(item.toMap());
   }
 
-  Future<void> deletItem(String id) async {
+  Future<void> deleteItem(String id) async {
     await itemsRef.doc(id).delete();
   }
 }
