@@ -10,4 +10,21 @@ class Item {
     required this.quantity,
     required this.price,
   });
+
+  Map<String, dynamic> toMaop() {
+    return {
+      'name': name,
+      'quantity': quantity,
+      'price': price,
+    };
+  }
+
+  factory Item.fromMap(String id, Map<String, dynamic> map) {
+    return Item(
+      id: id,
+      name: map['name'] ?? '',
+      quantity: map['quantity'] ?? 0,
+      price: (map['price'] ?? 0).toDouble(),
+    );
+  }
 }
