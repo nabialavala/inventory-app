@@ -11,6 +11,7 @@ class InventoryPage extends StatefulWidget {
 
 class _InventoryPageState extends State<InventoryPage> {
   final FirestoreService service = FirestoreService();
+  String searchText = '';
 
   Future<void> _showItemDialog({Item? item}) async {
     final formKey = GlobalKey<FormState>();
@@ -117,41 +118,65 @@ class _InventoryPageState extends State<InventoryPage> {
         onPressed: () => _showItemDialog(),
         child: const Icon(Icons.add),
       ),
-      body: StreamBuilder<List<Item>>(
-        stream: service.streamItems(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextField(
+              decoration: const InputDecoration(
+                labelText: 'Search items',
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.search),
+              ),
+              onChanged: (value) {
+                setState(() {
+                  searchText = value.toLowerCase();
+                });
+              },
+            ),
+          ),
+          Expanded(
+            child: StreamBuilder<List<Item>>(
+              stream: service.streamItems(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
 
-          if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          }
+                if (snapshot.hasError) {
+                  return Center(child: Text('Error: ${snapshot.error}'));
+                }
 
-          final items = snapshot.data ?? [];
+                final items = (snapshot.data ?? [])
+                  .where((item) =>
+                    item.name.toLowerCase().contains(searchText))
+                  .toList();
 
-          if (items.isEmpty) {
-            return const Center(child: Text('No items yet.'));
-          }
+                if (items.isEmpty) {
+                  return const Center(child: Text('No items yet.'));
+                }
 
-          return ListView.builder(
-            itemCount: items.length,
-            itemBuilder: (context, index) {
-              final item = items[index];
+                return ListView.builder(
+                  itemCount: items.length,
+                  itemBuilder: (context, index) {
+                    final item = items[index];
 
-              return ListTile(
-                title: Text(item.name),
-                subtitle: Text(
-                    'Qty: ${item.quantity} | \$${item.price.toStringAsFixed(2)}'),
-                onTap: () => _showItemDialog(item: item),
-                trailing: IconButton(
-                  icon: const Icon(Icons.delete),
-                  onPressed: () => _deleteItem(item),
-                ),
-              );
-            },
-          );
-        },
+                    return ListTile(
+                      title: Text(item.name),
+                      subtitle: Text(
+                          'Qty: ${item.quantity} | \$${item.price.toStringAsFixed(2)}'),
+                      onTap: () => _showItemDialog(item: item),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.delete),
+                        onPressed: () => _deleteItem(item),
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
