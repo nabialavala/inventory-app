@@ -107,7 +107,26 @@ class _InventoryPageState extends State<InventoryPage> {
   Future<void> _deleteItem(Item item) async {
     if (item.id == null) return;
 
-    await service.deleteItem(item.id!);
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Item?'),
+        content: Text('Are you sure you want to delete"${item.name}"?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('No, cancel.'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Yes, delete.')
+          ),
+        ],
+      ),
+    );
+    if (confirm == true) {
+      await service.deleteItem(item.id!);
+    }
   }
 
   @override
