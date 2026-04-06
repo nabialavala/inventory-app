@@ -11,7 +11,7 @@ class Item {
     required this.price,
   });
 
-  Map<String, dynamic> toMaop() {
+  Map<String, dynamic> toMap() {
     return {
       'name': name,
       'quantity': quantity,
